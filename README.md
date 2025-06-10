@@ -38,77 +38,20 @@ Antes de iniciar, certifique-se de ter os seguintes softwares instalados em sua 
 
 Abaixo estão os `Dockerfile`s para cada microserviço.
 
-### 5.1. Auth-API (PHP)
-
-**Localização:** `auth-api/Dockerfile`
-
-```dockerfile
-# auth-api/Dockerfile
-FROM php:8.1-apache
-
-# Instalar extensões PHP necessárias (ex: pdo_pgsql para PostgreSQL)
-RUN docker-php-ext-install pdo pdo_pgsql
-
-# Copiar código da aplicação para o diretório web do Apache
-COPY ./src/ /var/www/html/
-
-# Expor a porta 80 (padrão do Apache)
-EXPOSE 80
-
-# record-api/Dockerfile
-FROM python:3.9-slim
-
-WORKDIR /app
-
-# Copiar arquivo de dependências
-COPY ./requirements.txt /app/
-
-# Instalar dependências
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copiar código da aplicação
-COPY ./src/ /app/
-
-# Expor a porta da aplicação (ex: 5001)
-EXPOSE 5001
-
-# Comando para iniciar a aplicação
-CMD ["python", "app.py"]
-
-# receive-send-api/Dockerfile
-FROM node:18-alpine
-
-WORKDIR /usr/src/app
-
-# Copiar package.json e package-lock.json (se existir)
-COPY package*.json ./
-
-# Instalar dependências da aplicação
-RUN npm install
-
-# Copiar código da aplicação
-COPY ./src/ .
-
-# Expor a porta da aplicação (ex: 3000)
-EXPOSE 3000
-
-# Comando para iniciar a aplicação
-CMD [ "node", "server.js" ]
-
-8. Comandos de Build e Deploy
-8.1. Build das Imagens
+### 8. Comandos de Build e Deploy
+## 8.1. Build das Imagens
 O build das imagens é feito automaticamente pelo script deploy.sh ou manualmente com:
 
 docker-compose build
 
-8.2. Deploy da Aplicação
+## 8.2. Deploy da Aplicação
 Para realizar o deploy (subir todos os serviços):
 
 ./deploy.sh
 
 Este script também executará testes de saúde básicos.
 
-8.3. Parar a Aplicação
+## 8.3. Parar a Aplicação
 Para parar todos os serviços:
 
 docker-compose down
@@ -117,7 +60,7 @@ Para parar e remover os volumes (cuidado, isso apaga os dados do banco de dados 
 
 docker-compose down -v
 
-8.4. Visualizar Logs
+## 8.4. Visualizar Logs
 Para visualizar os logs de todos os serviços em tempo real:
 
 docker-compose logs -f
@@ -126,8 +69,8 @@ Para visualizar os logs de um serviço específico (ex: auth-api):
 
 docker-compose logs -f auth-api
 
-9. Diagramas (Mermaid)
-9.1. Diagrama de Contêineres e Rede
+### 9. Diagramas (Mermaid)
+## 9.1. Diagrama de Contêineres e Rede
 graph TD
     subgraph "Host Machine (Seu PC)"
         U[Usuário/Cliente]
@@ -160,7 +103,7 @@ graph TD
     style DB fill:#DDA0DD,stroke:#333,stroke-width:2px
     style CACHE fill:#FFA07A,stroke:#333,stroke-width:2px
 
-9.2. Diagrama de Fluxo de Rede (Simplificado)
+## 9.2. Diagrama de Fluxo de Rede (Simplificado)
 sequenceDiagram
     participant U as Usuário/Cliente
     participant RS as Receive-Send API (Node.js)
@@ -207,15 +150,13 @@ sequenceDiagram
     RC-->>-RS: Mensagens
     RS-->>-U: Lista de Mensagens
 
-10. Casos de Teste (Exemplos com curl)
-Nota: Os endpoints e formatos de payload são exemplos. Adapte-os à sua implementação.
-
-10.1. Registro de Usuário (Auth-API)
+### 10. Casos de Teste (Exemplos com curl)
+## 10.1. Registro de Usuário (Auth-API)
 curl -X POST -H "Content-Type: application/json" \
 -d '{"username": "vitor", "password": "password123"}' \
 http://localhost:8080/register # Ou o endpoint da sua Auth-API
 
-10.2. Autenticação de Usuário e Obtenção de Token (Auth-API)
+## 10.2. Autenticação de Usuário e Obtenção de Token (Auth-API)
 curl -X POST -H "Content-Type: application/json" \
 -d '{"username": "vitor", "password": "password123"}' \
 http://localhost:8080/login # Ou o endpoint da sua Auth-API
@@ -224,17 +165,17 @@ http://localhost:8080/login # Ou o endpoint da sua Auth-API
 Guarde o token para os próximos requests.
 TOKEN="SEU_TOKEN_AQUI"
 
-10.3. Envio de Mensagem (Receive-Send-API)
+## 10.3. Envio de Mensagem (Receive-Send-API)
 curl -X POST -H "Content-Type: application/json" \
 -H "Authorization: Bearer $TOKEN" \
 -d '{"sender_id": "1", "receiver_id": "2", "content": "Olá, tudo bem?"}' \
 http://localhost:3000/messages
 
-10.4. Consulta de Mensagens Armazenadas (Receive-Send-API ou Record-API)
+## 10.4. Consulta de Mensagens Armazenadas (Receive-Send-API ou Record-API)
 curl -X GET -H "Authorization: Bearer $TOKEN" \
 http://localhost:3000/messages?userId=1 # Ou o endpoint da sua API para buscar mensagens
 
-10.5. Teste de Saúde dos Serviços (Conforme deploy.sh)
+## 10.5. Teste de Saúde dos Serviços (Conforme deploy.sh)
 curl http://localhost:8080/health # Auth-API
 curl http://localhost:5001/health # Record-API
 curl http://localhost:3000/health # Receive-Send-API
